@@ -1,7 +1,7 @@
 from torchvision.datasets import CIFAR100
 import numpy as np
 from PIL import Image
-
+from logging import info
 
 class iCIFAR100(CIFAR100):
     def __init__(self,root,
@@ -16,7 +16,6 @@ class iCIFAR100(CIFAR100):
                                        transform=transform,
                                        target_transform=target_transform,
                                        download=download)
-
         self.target_test_transform=target_test_transform
         self.test_transform=test_transform
         self.TrainData = []
@@ -39,14 +38,13 @@ class iCIFAR100(CIFAR100):
             datas.append(data)
             labels.append(np.full((data.shape[0]), label))
         datas,labels=self.concatenate(datas,labels)
-        self.TestData=datas if self.TestData==[] else np.concatenate((self.TestData,datas),axis=0)
-        self.TestLabels=labels if self.TestLabels==[] else np.concatenate((self.TestLabels,labels),axis=0)
-        print("the size of test set is %s"%(str(self.TestData.shape)))
-        print("the size of test label is %s"%str(self.TestLabels.shape))
+        self.TestData=datas if isinstance(self.TestData,list) else np.concatenate((self.TestData,datas),axis=0)
+        self.TestLabels=labels if isinstance(self.TestLabels, list) else np.concatenate((self.TestLabels,labels),axis=0)
+        info("the size of test set is %s"%(str(self.TestData.shape)))
+        info("the size of test label is %s"%str(self.TestLabels.shape))
 
 
     def getTrainData(self,classes,exemplar_set):
-
         datas,labels=[],[]
         if len(exemplar_set)!=0:
             datas=[exemplar for exemplar in exemplar_set ]
@@ -58,8 +56,8 @@ class iCIFAR100(CIFAR100):
             datas.append(data)
             labels.append(np.full((data.shape[0]),label))
         self.TrainData,self.TrainLabels=self.concatenate(datas,labels)
-        print("the size of train set is %s"%(str(self.TrainData.shape)))
-        print("the size of train label is %s"%str(self.TrainLabels.shape))
+        info("the size of train set is %s"%(str(self.TrainData.shape)))
+        info("the size of train label is %s"%str(self.TrainLabels.shape))
 
     def getTrainItem(self,index):
         img, target = Image.fromarray(self.TrainData[index]), self.TrainLabels[index]
@@ -84,16 +82,15 @@ class iCIFAR100(CIFAR100):
         return index, img, target
 
     def __getitem__(self, index):
-        if self.TrainData!=[]:
+        if isinstance(self.TrainData, np.ndarray):
             return self.getTrainItem(index)
-        elif self.TestData!=[]:
+        elif isinstance(self.TestData, np.ndarray):
             return self.getTestItem(index)
 
-
     def __len__(self):
-        if self.TrainData!=[]:
+        if isinstance(self.TrainData, np.ndarray):
             return len(self.TrainData)
-        elif self.TestData!=[]:
+        elif isinstance(self.TestData, np.ndarray):
             return len(self.TestData)
 
     def get_image_class(self,label):
