@@ -265,8 +265,8 @@ class iCaRLmodel:
         self.old_model.eval()
         
         # TODO
-        if accuracy < self.acc_budget and KNN_accuracy < self.knn_acc_budget:
-            exit()
+        # if accuracy < self.acc_budget and KNN_accuracy < self.knn_acc_budget:
+        #     exit()
         
         
     def _construct_exemplar_set(self, images, m, label):
